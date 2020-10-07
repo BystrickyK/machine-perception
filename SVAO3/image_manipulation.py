@@ -94,12 +94,13 @@ class ImageBGR:
         filename = filename+'.bmp'
         cv.imwrite(filename, self.__image)
 
-    def show_image(self):
-        plt.figure()
-        plt.imshow(self.__image)
-        plt.show()
+    def plot_image(self, ax=None):
+        if ax:
+            ax.imshow(self.__image)
+        else:
+            plt.imshow(self.__image)
 
-    def plot_channels(self, bgr2rgb=False):
+    def show_channels(self, bgr2rgb=False):
         if bgr2rgb:
             img = self.rgb()
             colors = ('Reds_r','Greens_r','Blues_r')
@@ -144,14 +145,12 @@ img = ImageBGR(file='img_monitors.jpg')
 # Rotate image, transform into a different colorspace and plot channels
 img = img.rotate(-22, keep_ratio=False)
 img = ImageBGR.from_array(img.lab())
-img.plot_channels()
-
-
+img.show_channels()
 
 # Show histograms of gray-scaled image, histogram calculation done using both the class method
 # and a matplotlib .hist method for comparison
 img_prague = ImageBGR('prague_day.jpg')
-img_prague.plot_channels(bgr2rgb=True)
+img_prague.show_channels(bgr2rgb=True)
 histogram = img_prague.histogram()
 fig, axs = plt.subplots(2, 1)
 axs[0].fill_between(range(256), np.ravel(np.zeros([256, 1])), np.ravel(histogram))
@@ -162,10 +161,12 @@ plt.show()
 # Order -> top left , top right, bottom left, bottom right
 # source_vertices = np.array([[722,800], [1632, 397], [989, 1323], [1863, 866]], dtype='float32')
 img_warp = ImageBGR('monitor_opencv.jpg')
+fig, axs = plt.subplots(1, 2, tight_layout=True)
+img_warp.plot_image(axs[0])
 source_vertices = [[2824, 317], [3488, 435], [2819, 1675], [3486, 1581]]
 d_size = (500, 250)
 destination_vertices = [[0, 0], [d_size[0], 0], [0, d_size[1]], [d_size[0], d_size[1]]]
 img_warp = img_warp.perspective_transform(source_vertices, destination_vertices)
-img_warp.show_image()
+img_warp.plot_image(axs[1])
 
 img_warp.write_image('warped_opencv')
