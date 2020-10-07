@@ -1,0 +1,13 @@
+name: ComputerVision
+channels:
+  - defaults
+dependencies:
+  - python
+  - numpy
+  - matplotlib
+  - pandas
+  - scikit-learn
+  - scikit-image
+  - jupyter
+  - opencv=4.1.0
+prefix: /home/christoph/anaconda3/envs/ComputerVision
