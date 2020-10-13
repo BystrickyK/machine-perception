@@ -29,6 +29,7 @@ def plot_img(img, title='image'):
     hist, _, _ = ax2.hist(img.flatten(), bins=256)
     ax3.plot(hist.cumsum() / hist.cumsum().max())
 
+
 def range_by_quantiles(img, p_low, p_high, verbose=False):
     """ Function finds quantiles based on p_low and p_high
 
@@ -156,6 +157,7 @@ transformed_ruc = transform_by_ruc(grayscaled, x_low, x_high, verbose=False)
 plot_img(img, 'original image')
 plot_img(transformed, 'transformed image | naive thresholding with p_high = 0.7')
 
+
 # %% md
 def create_mask(img, thresh_low, thresh_high, plot=False):
     """ Function creates a boolean mask with pixels whose values are between
@@ -179,6 +181,7 @@ def create_mask(img, thresh_low, thresh_high, plot=False):
         plt.imshow(mask_composite, cmap='gray')
         plt.title("Boolean mask")
     return mask_composite
+
 
 def range_by_quantiles_masked(img, p_low, p_high, thresh_low=5, thresh_high=250, verbose=False):
     """ Function finds quantiles based on p_low and p_high
@@ -235,7 +238,7 @@ def advanced_lut(img, p_low, p_high, verbose=False, plot=False, segment_borders=
     Returns:
         img_new (np.array): transformed image
     """
-    img_new = img.copy()  #copy the original image
+    img_new = img.copy()  # copy the original image
 
     if segment_borders == None:  # segment the image into segments with equal ranges
         segment_range = 256 / segment_count
@@ -244,7 +247,7 @@ def advanced_lut(img, p_low, p_high, verbose=False, plot=False, segment_borders=
 
     for seg, thresholds in enumerate(segment_borders):
         x_low, x_high, mask = range_by_quantiles_masked(img, p_low, p_high, thresholds[0], thresholds[1],
-                                                              verbose=plot)
+                                                        verbose=plot)
         if verbose:
             print("Segment {}: \t x_low: {} \t x_high: {}".format(seg, x_low, x_high))
         img_masked = img[mask]  # flat array of masked pixels
@@ -256,12 +259,13 @@ def advanced_lut(img, p_low, p_high, verbose=False, plot=False, segment_borders=
                 new_pixel_value = thresholds[1]  # ~ ^
             else:
                 new_pixel_value = thresholds[0] + (thresholds[1] - thresholds[0]) / (x_high - x_low) * (
-                            pixel_value - x_low)
+                        pixel_value - x_low)
             return new_pixel_value
 
         # Use the pixel transformation function to create a lookup table
         # Use dict for quick indexing
-        lookup_table = {x:pixel_transformation(x) for x in range(0, 256)}  # most of the index values will be unused tho
+        lookup_table = {x: pixel_transformation(x) for x in
+                        range(0, 256)}  # most of the index values will be unused tho
 
         # # I thought lists are linked lists, but apparently they're arrays, so indexing is O(1) anyways
         # # https://wiki.python.org/moin/TimeComplexity
@@ -278,9 +282,10 @@ def advanced_lut(img, p_low, p_high, verbose=False, plot=False, segment_borders=
             return lookup_table[pixel_value]
 
         map_function = np.vectorize(pixel_lookup, otypes=[int])
-        img_new[mask] = map_function(img_masked)  #update the pixels that fit the current mask, most time wasted here
+        img_new[mask] = map_function(img_masked)  # update the pixels that fit the current mask, most time wasted here
 
     return img_new
+
 
 # Runs 100x faster because the computations don't rely on Python for loops
 @timer
@@ -288,10 +293,11 @@ def masked_clahe(img):
     new_img = img.copy()
     mask = create_mask(img, 5, 245, plot=False)  # filter out the darkest/brightest pixels
     clahe = cv.createCLAHE()
-    new_img[mask] = clahe.apply(img)[mask]  #update only masked pixels
+    new_img[mask] = clahe.apply(img)[mask]  # update only masked pixels
     return new_img
 
-#%%
+
+# %%
 # img_RGB = plt.imread("M.jpg")  # The biomedical image is more interesting for contrast stretching imo
 img_RGB = plt.imread("L.jpg")
 img = img_RGB.copy()
