@@ -91,7 +91,13 @@ def transform_by_lut(img, x_low, x_high, verbose=False):
     # return map_function(img)
 
     # Use the pixel transformation function to create a lookup table
-    lookup_table = [pixel_transformation(x) for x in range(0, 256)]
+    # Use dict for quick indexing
+    lookup_table = {x: pixel_transformation(x) for x in range(0, 256)}
+
+    # # I thought lists are linked lists, but apparently they're arrays, so indexing is O(1) anyways
+    # # https://wiki.python.org/moin/TimeComplexity
+    # lookup_table = [pixel_transformation(x) for x in range(0, 256)]
+    # lookup_table = np.array(lookup_table)  # somehow np.arrays are much slower (??)
 
     # Create a function that takes pixel value as input and uses it to index into lookup_table to get the result
     def pixel_lookup(pixel_value):
@@ -263,14 +269,7 @@ def advanced_lut(img, p_low, p_high, verbose=False, plot=False, segment_borders=
             return new_pixel_value
 
         # Use the pixel transformation function to create a lookup table
-        # Use dict for quick indexing
-        lookup_table = {x: pixel_transformation(x) for x in
-                        range(0, 256)}  # most of the index values will be unused tho
-
-        # # I thought lists are linked lists, but apparently they're arrays, so indexing is O(1) anyways
-        # # https://wiki.python.org/moin/TimeComplexity
-        # lookup_table = [pixel_transformation(x) for x in range(0, 256)]
-        # lookup_table = np.array(lookup_table)  # somehow np.arrays are much slower (??)
+        lookup_table = {x: pixel_transformation(x) for x in range(0, 256)}
 
         if plot:
             plt.figure()
@@ -282,12 +281,13 @@ def advanced_lut(img, p_low, p_high, verbose=False, plot=False, segment_borders=
             return lookup_table[pixel_value]
 
         map_function = np.vectorize(pixel_lookup, otypes=[int])
-        img_new[mask] = map_function(img_masked)  # update the pixels that fit the current mask, most time wasted here
+        # vv update the pixels that fit the current mask, most time wasted here vv
+        img_new[mask] = map_function(img_masked)
 
     return img_new
 
 
-# Runs 100x faster because the computations don't rely on Python for loops
+# Runs ~30x faster (on a single channel) because the computations don't rely on Python for loops
 @timer
 def masked_clahe(img):
     new_img = img.copy()
@@ -298,13 +298,13 @@ def masked_clahe(img):
 
 
 # %%
-# img_RGB = plt.imread("M.jpg")  # The biomedical image is more interesting for contrast stretching imo
-img_RGB = plt.imread("L.jpg")
+img_RGB = plt.imread("M.jpg")  # The biomedical image is more interesting for contrast stretching imo
+# img_RGB = plt.imread("L.jpg")
 img = img_RGB.copy()
 P_LOW = 0.1
 P_HIGH = 0.9
 
-# I managed to unintentionally write the functions so they work even for imgs with more channels
+# I managed to unintentionally write the functions so they work even for imgs with multiple channels
 # img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)  # uncomment to use grayscale imgs
 # transformed_img = advanced_lut(img, P_LOW, P_HIGH, verbose=True)
 
