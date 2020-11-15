@@ -170,7 +170,8 @@ masks = np.array(masks, dtype='uint8')
 #%% Label objects in the image
 class ObjectInfo:
     """
-    Calculates moments, centroid, area, minimal area bounding rectangle from the object contour
+    Calculates moments, centroid, area, minimal area bounding rectangle, object length,
+     and head/point coordinates from the object contour
     """
     def __init__(self, object_contour):
         self.object_contour = object_contour
