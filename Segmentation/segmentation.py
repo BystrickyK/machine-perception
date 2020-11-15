@@ -27,14 +27,14 @@ int,
 angle of camera (letter alpha in diagram above)
 """
 PXL = (2 * LENGTH / RESOLUTION[0]) * np.sin(ALPHA / 2)
-PXL = PXL * 10e2  # m -> cm
+PXL = PXL * 1e2  # m -> cm
 PXL_AREA = PXL**2  # cm2
 """
 float,
 side length of a pixel in meters
 """
 
-# %%
+# %% Transform the images to grayscale and create a np.array of images
 dtype = np.float32
 
 empty = cv2.imread(os.path.join(PATH, "nail_empty.jpg"))
@@ -54,6 +54,7 @@ nails = np.array(nails, dtype=dtype)
 
 bad_imgs = np.stack((empty_color, error_color))
 imgs = np.concatenate((bad_imgs, nails), axis=0)
+
 # %%
 fig1, axs1 = plt.subplots(3, 3, tight_layout=True)
 axs1 = axs1.flatten()
@@ -130,7 +131,7 @@ def close_img(img, kernel_size=5, iterations=1):
     return img
 
 
-# %%
+# %% Pick out the objects in the image (segmentation)
 thresh_L = 180
 thresh_H = 230
 
@@ -149,7 +150,7 @@ for i, img in enumerate(imgs, start=0):
     masks.append(img)
 masks = np.array(masks, dtype=np.float32)
 
-#%% Label objects in teh image
+#%% Label objects in the image
 
 def find_objects(img):
     img = np.uint8(img)
@@ -167,10 +168,10 @@ def annotate_objects(ax, stats):
         annotation_str = "Object {}\nArea {:0.1f}cm2\nLength {:0.1f}cm".format(i+1, area_cm2, length)
         ax.text(leftmost, topmost, annotation_str, bbox=dict(facecolor='white', alpha=0.3))
         ax.add_patch(rect)
-#%%
 
-# add two images with more than one nail (by combining images)
-new_img = np.any(np.stack([masks[4], masks[5]]), axis=0)
+
+#%% add two images with more than one nail (by combining images)
+new_img = np.any(np.stack([masks[4], masks[5]]), axis=0)  # Combine 5th and 6th boolean image
 new_img = new_img[np.newaxis, :]
 masks = np.concatenate([masks, new_img], axis=0)
 new_img = np.any(np.stack([masks[2], masks[3]]), axis=0)
