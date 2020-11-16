@@ -53,9 +53,9 @@ for i in range(1, 6):
 nails = np.array(nails, dtype=dtype)
 
 bad_imgs = np.stack((empty_color, error_color))
-imgs = np.concatenate((bad_imgs, nails), axis=0)
+imgs = np.concatenate((bad_imgs, nails), axis=0)  # Array of all images
 
-# %%
+# %%  Plot all images
 fig1, axs1 = plt.subplots(3, 3, tight_layout=True)
 axs1 = axs1.flatten()
 title_str = ["Empty - no nail", "Example of error", "Example 1", "Example 2", "Example 3", "Example 4", "Example 5"]
@@ -64,7 +64,7 @@ for i, img in enumerate(imgs, start=0):
     axs1[i].imshow(img)
 
 
-# %%
+# %% Segmentation; transforms greyscale image into boolean image (1 - object; 0 - background)
 class NailDetector:
     def __init__(self, color_thresh=(150, 240), kernel_close=5, iterations_close=1,
                  kernel_erode=5, iterations_erode=1, kernel_dilate=5, iterations_dilate=1):
@@ -121,7 +121,7 @@ class NailDetector:
 
     def dilate_img(self, img):
         """
-        Dilutes the image.
+        Dilutes the image. 
         Args:
             img:
             kernel_size:
@@ -154,7 +154,6 @@ class NailDetector:
 
 
 # %% Pick out the objects in the image (segmentation)
-
 detector = NailDetector(color_thresh=(170, 240), kernel_close=5, iterations_close=9)
 
 masks = []
@@ -215,6 +214,10 @@ class ObjectInfo:
 
 
 class NailAnnotator:
+    """
+    Takes boolean image as an input, finds objects in the image and saves the analyzed objects in self.detected_objects.
+    For example, if two nails are detected, self.detected_objects will have two elements (of datatype ObjectInfo)
+    """
     def __init__(self):
         self.detected_objects = []
 
@@ -231,6 +234,7 @@ class NailAnnotator:
         else:
             return False
 
+        # Visualizes the results by drawing into the input axis (which should contain the currently analyzed image)
     def annotate_objects(self, ax):
         cmap = plt.get_cmap('Pastel1', 5)
         for i, detected_obj in enumerate(self.detected_objects):
@@ -255,6 +259,7 @@ class NailAnnotator:
             center = patches.Circle(detected_obj.C_, 10, alpha=0.4, color='k')
             ax.add_patch(center)
 
+    # Purges the annotator's memory
     def forget(self):
         self.detected_objects = []
 
